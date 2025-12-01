@@ -6,8 +6,7 @@ requests
 bcrypt
 pandas
 numpy
-elasticsearch==8.11.0
-elasticsearch
+elasticsearch[async]==8.11.0
 beautifulsoup4
 lxml
 spacy
