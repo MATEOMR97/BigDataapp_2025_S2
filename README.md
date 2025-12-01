@@ -4,6 +4,8 @@ Aplicación para el frontend (python+flask) de BigData con MONGODB + ELASTICSEAR
 # Autor
 
  Nombre: David Mateo Morales Romero
+ 
+ 
  Email:dmoralesr1@ucentral.edu.co
 
 # Descripción
