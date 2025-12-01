@@ -1,4 +1,9 @@
 Flask
 pymongo
 gunicorn
-elasticSearch
+python-dotenv
+requests
+bcrypt
+pandas
+numpy
+elasticSearch==8.11.0
