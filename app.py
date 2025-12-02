@@ -22,8 +22,8 @@ CREATOR_APP = "MATEOMR97/https://github.com/MATEOMR97/BigDataapp_2025_S2"
 mongo_uri   = os.environ.get("MONGO_URI")
 
 if not mongo_uri:
-    #uri = "mongodb+srv://estudiante:3stud14nt3@cluster0.6vt62.mongodb.net/test"
-    uri         = "mongodb+srv://estudiante:3stud14nt3@cluster0.6vt62.mongodb.net/test"
+    #uri = "mongodb+srv://dmoralesr1:Juanjose1996**@cluster0.bt85l81.mongodb.net/?appName=Cluster0"
+    uri         = "mongodb+srv://dmoralesr1:Juanjose1996**@cluster0.bt85l81.mongodb.net/?appName=Cluster0"
     mongo_uri   = uri
 
 # Función para conectar a MongoDB
