@@ -18,12 +18,12 @@ def inject_now():
 
 # Versión de la aplicación
 VERSION_APP = "Versión 2.2 del Mayo 22 del 2025"
-CREATOR_APP = "Deivid Agudelo/https://github.com/D31V1X/BigDataApp"
+CREATOR_APP = "MATEOMR97/https://github.com/MATEOMR97/BigDataapp_2025_S2"
 mongo_uri   = os.environ.get("MONGO_URI")
 
 if not mongo_uri:
-    #uri = "mongodb+srv://DbCentral:DbCentral2025@cluster0.vhltza7.mongodb.net/?appName=Cluster0"
-    uri         = "mongodb+srv://DbCentral:DbCentral@cluster0.gqd4gxq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+    #uri = "mongodb+srv://estudiante:3stud14nt3@cluster0.6vt62.mongodb.net/test"
+    uri         = "mongodb+srv://estudiante:3stud14nt3@cluster0.6vt62.mongodb.net/test"
     mongo_uri   = uri
 
 # Función para conectar a MongoDB
@@ -39,8 +39,8 @@ def connect_mongo():
 
 # Configuración de Elasticsearch
 client = Elasticsearch(
-    "https://bigdata-fc3fe6.es.us-east-1.aws.elastic.cloud:443",
-    api_key="dEgtTU41Y0JncUkyNFZvS3VuQWQ6UU1tYnRXRV9qMURtWDRVYm9xMEhfQQ=="
+    "https://9ad253341e18435fbdee621c70e570cd.us-central1.gcp.cloud.es.io:443",
+    api_key="dExWaTNKb0I3dTdoME5BRGR1U0s6MWttUTgwdFVPa25pQVZrREg2QzZoQQ=="
 )
 INDEX_NAME = "ucentral_test_"
 
