@@ -9,7 +9,7 @@ import re
 from elasticsearch import Elasticsearch
 
 app = Flask(__name__)
-app.secret_key = 'ucentraldeivid'  # Cambia esto por una clave secreta segura
+app.secret_key = 'MateoBigdata'  # Cambia esto por una clave secreta segura
 
 # Agregar la función now al contexto de la plantilla
 @app.context_processor
