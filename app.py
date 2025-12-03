@@ -112,8 +112,12 @@ def contacto():
         try:
             client = connect_mongo()
             if not client:
-                return render_template('contacto.html', version=VERSION_APP, creador=CREATOR_APP,
-                                       error_message="Error de conexión a la base de datos")
+                return render_template(
+                    'contacto.html',
+                    version=VERSION_APP,
+                    creador=CREATOR_APP,
+                    error_message="Error de conexión a la base de datos"
+                )
 
             db = client['administracion']
             collection = db['contactos']
@@ -132,11 +136,19 @@ def contacto():
             }
 
             collection.insert_one(doc)
-            return render_template('contacto.html', version=VERSION_APP, creador=CREATOR_APP,
-                                   success_message="Mensaje enviado con éxito.")
+            return render_template(
+                'contacto.html',
+                version=VERSION_APP,
+                creador=CREATOR_APP,
+                success_message="Mensaje enviado con éxito."
+            )
         except Exception as e:
-            return render_template('contacto.html', version=VERSION_APP, creador=CREATOR_APP,
-                                   error_message=f"Error al guardar el mensaje: {str(e)}")
+            return render_template(
+                'contacto.html',
+                version=VERSION_APP,
+                creador=CREATOR_APP,
+                error_message=f"Error al guardar el mensaje: {str(e)}"
+            )
         finally:
             if 'client' in locals():
                 client.close()
@@ -148,9 +160,12 @@ def login():
     if request.method == 'POST':
         client = connect_mongo()
         if not client:
-            return render_template('login.html',
-                                   error_message='Error de conexión con la base de datos. Por favor, intente más tarde.',
-                                   version=VERSION_APP, creador=CREATOR_APP)
+            return render_template(
+                'login.html',
+                error_message='Error de conexión con la base de datos. Por favor, intente más tarde.',
+                version=VERSION_APP,
+                creador=CREATOR_APP
+            )
         try:
             db = client['administracion']
             security_collection = db['seguridad']
@@ -168,13 +183,19 @@ def login():
                 session['permisos'] = user.get('permisos', {})
                 return redirect(url_for('gestion_proyecto'))
             else:
-                return render_template('login.html',
-                                       error_message='Usuario o contraseña incorrectos',
-                                       version=VERSION_APP, creador=CREATOR_APP)
+                return render_template(
+                    'login.html',
+                    error_message='Usuario o contraseña incorrectos',
+                    version=VERSION_APP,
+                    creador=CREATOR_APP
+                )
         except Exception as e:
-            return render_template('login.html',
-                                   error_message=f'Error al validar credenciales: {str(e)}',
-                                   version=VERSION_APP, creador=CREATOR_APP)
+            return render_template(
+                'login.html',
+                error_message=f'Error al validar credenciales: {str(e)}',
+                version=VERSION_APP,
+                creador=CREATOR_APP
+            )
         finally:
             client.close()
 
@@ -212,11 +233,13 @@ def gestor_usuarios():
         flash('No tiene permisos para gestionar usuarios', 'danger')
         return redirect(url_for('gestion_proyecto'))
 
-    return render_template('gestor_usuarios.html',
-                           usuario=session.get('usuario'),
-                           permisos=permisos,
-                           version=VERSION_APP,
-                           creador=CREATOR_APP)
+    return render_template(
+        'gestor_usuarios.html',
+        usuario=session.get('usuario'),
+        permisos=permisos,
+        version=VERSION_APP,
+        creador=CREATOR_APP
+    )
 
 @app.route('/crear-usuario', methods=['POST'])
 def crear_usuario():
@@ -346,29 +369,35 @@ def gestion_proyecto():
                     'count': count
                 })
 
-        return render_template('gestion/index.html',
-                               databases=databases,
-                               selected_db=selected_db,
-                               collections_data=collections_data,
-                               version=VERSION_APP,
-                               creador=CREATOR_APP,
-                               usuario=session['usuario'])
+        return render_template(
+            'gestion/index.html',
+            databases=databases,
+            selected_db=selected_db,
+            collections_data=collections_data,
+            version=VERSION_APP,
+            creador=CREATOR_APP,
+            usuario=session['usuario']
+        )
     except Exception as e:
-        return render_template('gestion/index.html',
-                               error_message=f'Error al conectar con MongoDB: {str(e)}',
-                               version=VERSION_APP,
-                               creador=CREATOR_APP,
-                               usuario=session['usuario'])
+        return render_template(
+            'gestion/index.html',
+            error_message=f'Error al conectar con MongoDB: {str(e)}',
+            version=VERSION_APP,
+            creador=CREATOR_APP,
+            usuario=session['usuario']
+        )
 
 @app.route('/crear-coleccion-form/<database>')
 def crear_coleccion_form(database):
     if 'usuario' not in session:
         return redirect(url_for('login'))
-    return render_template('gestion/crear_coleccion.html',
-                           database=database,
-                           usuario=session['usuario'],
-                           version=VERSION_APP,
-                           creador=CREATOR_APP)
+    return render_template(
+        'gestion/crear_coleccion.html',
+        database=database,
+        usuario=session['usuario'],
+        version=VERSION_APP,
+        creador=CREATOR_APP
+    )
 
 @app.route('/crear-coleccion', methods=['POST'])
 def crear_coleccion():
@@ -381,21 +410,25 @@ def crear_coleccion():
         zip_file = request.files.get('zip_file')
 
         if not all([database, collection_name, zip_file]):
-            return render_template('gestion/crear_coleccion.html',
-                                   error_message='Todos los campos son requeridos',
-                                   database=database,
-                                   usuario=session['usuario'],
-                                   version=VERSION_APP,
-                                   creador=CREATOR_APP)
+            return render_template(
+                'gestion/crear_coleccion.html',
+                error_message='Todos los campos son requeridos',
+                database=database,
+                usuario=session['usuario'],
+                version=VERSION_APP,
+                creador=CREATOR_APP
+            )
 
         client = connect_mongo()
         if not client:
-            return render_template('gestion/crear_coleccion.html',
-                                   error_message='Error de conexión con MongoDB',
-                                   database=database,
-                                   usuario=session['usuario'],
-                                   version=VERSION_APP,
-                                   creador=CREATOR_APP)
+            return render_template(
+                'gestion/crear_coleccion.html',
+                error_message='Error de conexión con MongoDB',
+                database=database,
+                usuario=session['usuario'],
+                version=VERSION_APP,
+                creador=CREATOR_APP
+            )
 
         db = client[database]
         collection = db[collection_name]
@@ -431,12 +464,14 @@ def crear_coleccion():
         return redirect(url_for('gestion_proyecto', database=database))
 
     except Exception as e:
-        return render_template('gestion/crear_coleccion.html',
-                               error_message=f'Error al crear la colección: {str(e)}',
-                               database=database,
-                               usuario=session['usuario'],
-                               version=VERSION_APP,
-                               creador=CREATOR_APP)
+        return render_template(
+            'gestion/crear_coleccion.html',
+            error_message=f'Error al crear la colección: {str(e)}',
+            database=database,
+            usuario=session['usuario'],
+            version=VERSION_APP,
+            creador=CREATOR_APP
+        )
     finally:
         if 'client' in locals():
             client.close()
@@ -449,11 +484,13 @@ def ver_registros(database, collection):
     try:
         client = connect_mongo()
         if not client:
-            return render_template('gestion/index.html',
-                                   error_message='Error de conexión con MongoDB',
-                                   version=VERSION_APP,
-                                   creador=CREATOR_APP,
-                                   usuario=session['usuario'])
+            return render_template(
+                'gestion/index.html',
+                error_message='Error de conexión con MongoDB',
+                version=VERSION_APP,
+                creador=CREATOR_APP,
+                usuario=session['usuario']
+            )
 
         db = client[database]
         collection_obj = db[collection]
@@ -462,19 +499,23 @@ def ver_registros(database, collection):
         for record in records:
             record['_id'] = str(record['_id'])
 
-        return render_template('gestion/ver_registros.html',
-                               database=database,
-                               collection_name=collection,
-                               records=records,
-                               version=VERSION_APP,
-                               creador=CREATOR_APP,
-                               usuario=session['usuario'])
+        return render_template(
+            'gestion/ver_registros.html',
+            database=database,
+            collection_name=collection,
+            records=records,
+            version=VERSION_APP,
+            creador=CREATOR_APP,
+            usuario=session['usuario']
+        )
     except Exception as e:
-        return render_template('gestion/index.html',
-                               error_message=f'Error al obtener registros: {str(e)}',
-                               version=VERSION_APP,
-                               creador=CREATOR_APP,
-                               usuario=session['usuario'])
+        return render_template(
+            'gestion/index.html',
+            error_message=f'Error al obtener registros: {str(e)}',
+            version=VERSION_APP,
+            creador=CREATOR_APP,
+            usuario=session['usuario']
+        )
     finally:
         if 'client' in locals():
             client.close()
@@ -511,10 +552,12 @@ def obtener_registros():
 def crear_base_datos_form():
     if 'usuario' not in session:
         return redirect(url_for('login'))
-    return render_template('gestion/crear_base_datos.html',
-                           version=VERSION_APP,
-                           creador=CREATOR_APP,
-                           usuario=session['usuario'])
+    return render_template(
+        'gestion/crear_base_datos.html',
+        version=VERSION_APP,
+        creador=CREATOR_APP,
+        usuario=session['usuario']
+    )
 
 @app.route('/crear-base-datos', methods=['POST'])
 def crear_base_datos():
@@ -527,19 +570,23 @@ def crear_base_datos():
 
         valid_pattern = re.compile(r'^[a-zA-Z0-9_]+$')
         if not valid_pattern.match(database_name) or not valid_pattern.match(collection_name):
-            return render_template('gestion/crear_base_datos.html',
-                                   error_message='Los nombres no pueden contener tildes, espacios ni caracteres especiales',
-                                   version=VERSION_APP,
-                                   creador=CREATOR_APP,
-                                   usuario=session['usuario'])
+            return render_template(
+                'gestion/crear_base_datos.html',
+                error_message='Los nombres no pueden contener tildes, espacios ni caracteres especiales',
+                version=VERSION_APP,
+                creador=CREATOR_APP,
+                usuario=session['usuario']
+            )
 
         client = connect_mongo()
         if not client:
-            return render_template('gestion/crear_base_datos.html',
-                                   error_message='Error de conexión con MongoDB',
-                                   version=VERSION_APP,
-                                   creador=CREATOR_APP,
-                                   usuario=session['usuario'])
+            return render_template(
+                'gestion/crear_base_datos.html',
+                error_message='Error de conexión con MongoDB',
+                version=VERSION_APP,
+                creador=CREATOR_APP,
+                usuario=session['usuario']
+            )
 
         db = client[database_name]
         collection = db[collection_name]
@@ -550,11 +597,13 @@ def crear_base_datos():
         return redirect(url_for('gestion_proyecto', database=database_name))
 
     except Exception as e:
-        return render_template('gestion/crear_base_datos.html',
-                               error_message=f'Error al crear la base de datos: {str(e)}',
-                               version=VERSION_APP,
-                               creador=CREATOR_APP,
-                               usuario=session['usuario'])
+        return render_template(
+            'gestion/crear_base_datos.html',
+            error_message=f'Error al crear la base de datos: {str(e)}',
+            version=VERSION_APP,
+            creador=CREATOR_APP,
+            usuario=session['usuario']
+        )
     finally:
         if 'client' in locals():
             client.close()
@@ -573,18 +622,22 @@ def elasticAdmin():
         index_info = client_es.indices.get(index=INDEX_NAME)
         doc_count = client_es.count(index=INDEX_NAME)['count']
 
-        return render_template('gestion/ver_elasticAdmin.html',
-                               index_name=INDEX_NAME,
-                               doc_count=doc_count,
-                               version=VERSION_APP,
-                               creador=CREATOR_APP,
-                               usuario=session['usuario'])
+        return render_template(
+            'gestion/ver_elasticAdmin.html',
+            index_name=INDEX_NAME,
+            doc_count=doc_count,
+            version=VERSION_APP,
+            creador=CREATOR_APP,
+            usuario=session['usuario']
+        )
     except Exception as e:
-        return render_template('gestion/ver_elasticAdmin.html',
-                               error_message=f'Error al conectar con Elasticsearch: {str(e)}',
-                               version=VERSION_APP,
-                               creador=CREATOR_APP,
-                               usuario=session['usuario'])
+        return render_template(
+            'gestion/ver_elasticAdmin.html',
+            error_message=f'Error al conectar con Elasticsearch: {str(e)}',
+            version=VERSION_APP,
+            creador=CREATOR_APP,
+            usuario=session['usuario']
+        )
 
 @app.route('/elastic-agregar-documentos', methods=['GET', 'POST'])
 def elastic_agregar_documentos():
@@ -594,21 +647,25 @@ def elastic_agregar_documentos():
     if request.method == 'POST':
         try:
             if 'zipFile' not in request.files:
-                return render_template('gestion/elastic_agregar_documentos.html',
-                                       error_message='No se ha seleccionado ningún archivo',
-                                       index_name=INDEX_NAME,
-                                       version=VERSION_APP,
-                                       creador=CREATOR_APP,
-                                       usuario=session['usuario'])
+                return render_template(
+                    'gestion/elastic_agregar_documentos.html',
+                    error_message='No se ha seleccionado ningún archivo',
+                    index_name=INDEX_NAME,
+                    version=VERSION_APP,
+                    creador=CREATOR_APP,
+                    usuario=session['usuario']
+                )
 
             zip_file = request.files['zipFile']
             if zip_file.filename == '':
-                return render_template('gestion/elastic_agregar_documentos.html',
-                                       error_message='No se ha seleccionado ningún archivo',
-                                       index_name=INDEX_NAME,
-                                       version=VERSION_APP,
-                                       creador=CREATOR_APP,
-                                       usuario=session['usuario'])
+                return render_template(
+                    'gestion/elastic_agregar_documentos.html',
+                    error_message='No se ha seleccionado ningún archivo',
+                    index_name=INDEX_NAME,
+                    version=VERSION_APP,
+                    creador=CREATOR_APP,
+                    usuario=session['usuario']
+                )
 
             temp_dir = os.path.join(os.path.dirname(__file__), 'temp')
             os.makedirs(temp_dir, exist_ok=True)
@@ -647,26 +704,32 @@ def elastic_agregar_documentos():
                     os.rmdir(os.path.join(root, dir))
             os.rmdir(temp_dir)
 
-            return render_template('gestion/elastic_agregar_documentos.html',
-                                   success_message=f'Se indexaron {success_count} documentos exitosamente. Errores: {error_count}',
-                                   index_name=INDEX_NAME,
-                                   version=VERSION_APP,
-                                   creador=CREATOR_APP,
-                                   usuario=session['usuario'])
+            return render_template(
+                'gestion/elastic_agregar_documentos.html',
+                success_message=f'Se indexaron {success_count} documentos exitosamente. Errores: {error_count}',
+                index_name=INDEX_NAME,
+                version=VERSION_APP,
+                creador=CREATOR_APP,
+                usuario=session['usuario']
+            )
 
         except Exception as e:
-            return render_template('gestion/elastic_agregar_documentos.html',
-                                   error_message=f'Error al procesar el archivo: {str(e)}',
-                                   index_name=INDEX_NAME,
-                                   version=VERSION_APP,
-                                   creador=CREADOR_APP,
-                                   usuario=session['usuario'])
+            return render_template(
+                'gestion/elastic_agregar_documentos.html',
+                error_message=f'Error al procesar el archivo: {str(e)}',
+                index_name=INDEX_NAME,
+                version=VERSION_APP,
+                creador=CREATOR_APP,
+                usuario=session['usuario']
+            )
 
-    return render_template('gestion/elastic_agregar_documentos.html',
-                           index_name=INDEX_NAME,
-                           version=VERSION_APP,
-                           creador=CREATOR_APP,
-                           usuario=session['usuario'])
+    return render_template(
+        'gestion/elastic_agregar_documentos.html',
+        index_name=INDEX_NAME,
+        version=VERSION_APP,
+        creador=CREATOR_APP,
+        usuario=session['usuario']
+    )
 
 @app.route('/elastic-listar-documentos')
 def elastic_listar_documentos():
@@ -684,19 +747,23 @@ def elastic_listar_documentos():
 
         documents = response['hits']['hits']
 
-        return render_template('gestion/elastic_listar_documentos.html',
-                               index_name=INDEX_NAME,
-                               documents=documents,
-                               version=VERSION_APP,
-                               creador=CREATOR_APP,
-                               usuario=session['usuario'])
+        return render_template(
+            'gestion/elastic_listar_documentos.html',
+            index_name=INDEX_NAME,
+            documents=documents,
+            version=VERSION_APP,
+            creador=CREATOR_APP,
+            usuario=session['usuario']
+        )
     except Exception as e:
-        return render_template('gestion/elastic_listar_documentos.html',
-                               error_message=f'Error al obtener documentos: {str(e)}',
-                               index_name=INDEX_NAME,
-                               version=VERSION_APP,
-                               creador=CREATOR_APP,
-                               usuario=session['usuario'])
+        return render_template(
+            'gestion/elastic_listar_documentos.html',
+            error_message=f'Error al obtener documentos: {str(e)}',
+            index_name=INDEX_NAME,
+            version=VERSION_APP,
+            creador=CREATOR_APP,
+            usuario=session['usuario']
+        )
 
 @app.route('/elastic-eliminar-documento', methods=['POST'])
 def elastic_eliminar_documento():
@@ -718,6 +785,33 @@ def elastic_eliminar_documento():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/elastic-reset-documentos', methods=['POST'])
+def elastic_reset_documentos():
+    if 'usuario' not in session:
+        return jsonify({'error': 'No autorizado'}), 401
+
+    try:
+        # Borra TODOS los documentos del índice pero mantiene mapping y settings
+        resp = client_es.delete_by_query(
+            index=INDEX_NAME,
+            body={
+                "query": {
+                    "match_all": {}
+                }
+            }
+        )
+
+        # Refrescar índice para que el conteo se actualice
+        client_es.indices.refresh(index=INDEX_NAME)
+
+        return jsonify({
+            'success': True,
+            'deleted': resp.get('deleted', 0)
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/buscador', methods=['GET', 'POST'])
 def buscador():
     if request.method == 'POST':
@@ -726,6 +820,13 @@ def buscador():
             search_text = request.form.get('search_text')
             fecha_desde = request.form.get('fecha_desde')
             fecha_hasta = request.form.get('fecha_hasta')
+
+            # DEBUG: ver qué llega del formulario
+            print("DEBUG FORM:", request.form)
+            print("DEBUG search_type:", search_type)
+            print("DEBUG search_text:", search_text)
+            print("DEBUG fecha_desde:", fecha_desde)
+            print("DEBUG fecha_hasta:", fecha_hasta)
 
             if not fecha_desde:
                 fecha_desde = "1500-01-01"
@@ -755,7 +856,7 @@ def buscador():
                     },
                     "Fecha": {
                         "date_histogram": {
-                            "field": "fecha_generado",
+                            "field": "fecha",
                             "calendar_interval": "year",
                             "format": "yyyy"
                         }
@@ -763,60 +864,72 @@ def buscador():
                 }
             }
 
-            if search_type == 'texto':
-                query["query"]["bool"]["must"].append({
-                    "match_phrase": {
-                        "texto": {
-                            "query": search_text,
-                            "slop": 1
+            # Solo dos opciones: texto o archivo
+            if search_text:
+                if search_type == 'texto':
+                    query["query"]["bool"]["must"].append({
+                        "match_phrase": {
+                            "texto": {
+                                "query": search_text,
+                                "slop": 1
+                            }
                         }
-                    }
-                })
-            else:
-                search_text = '' + search_text + ''
-                query["query"]["bool"]["must"].append(
-                    {"match": {search_type: search_text}}
-                )
+                    })
+                else:  # archivo
+                    query["query"]["bool"]["must"].append(
+                        {"match": {"archivo": search_text}}
+                    )
 
-            range_query = {
+            # Rango sobre el campo 'fecha' (NO fecha_generado)
+            query["query"]["bool"]["must"].append({
                 "range": {
-                    "fecha_generado": {
+                    "fecha": {
                         "format": "yyyy-MM-dd",
                         "gte": fecha_desde,
                         "lte": fecha_hasta
                     }
                 }
-            }
-            query["query"]["bool"]["must"].append(range_query)
+            })
+
+            # DEBUG: ver query enviada a ES
+            print("DEBUG QUERY:", json.dumps(query, ensure_ascii=False, indent=2))
 
             response = client_es.search(
                 index=INDEX_NAME,
                 body=query
             )
 
-            hits = response['hits']['hits']
-            aggregations = response['aggregations']
+            print("DEBUG HITS TOTAL:", response["hits"]["total"])
 
-            return render_template('buscador.html',
-                                   version=VERSION_APP,
-                                   creador=CREATOR_APP,
-                                   hits=hits,
-                                   aggregations=aggregations,
-                                   search_type=search_type,
-                                   search_text=search_text,
-                                   fecha_desde=fecha_desde,
-                                   fecha_hasta=fecha_hasta,
-                                   query=query)
+            hits = response['hits']['hits']
+            aggregations = response.get('aggregations', {})
+
+            return render_template(
+                'buscador.html',
+                version=VERSION_APP,
+                creador=CREATOR_APP,
+                hits=hits,
+                aggregations=aggregations,
+                search_type=search_type,
+                search_text=search_text,
+                fecha_desde=fecha_desde,
+                fecha_hasta=fecha_hasta,
+                query=query
+            )
 
         except Exception as e:
-            return render_template('buscador.html',
-                                   version=VERSION_APP,
-                                   creador=CREATOR_APP,
-                                   error_message=f'Error en la búsqueda: {str(e)}')
+            return render_template(
+                'buscador.html',
+                version=VERSION_APP,
+                creador=CREATOR_APP,
+                error_message=f'Error en la búsqueda: {str(e)}'
+            )
 
-    return render_template('buscador.html',
-                           version=VERSION_APP,
-                           creador=CREATOR_APP)
+    return render_template(
+        'buscador.html',
+        version=VERSION_APP,
+        creador=CREATOR_APP
+    )
 
 @app.route('/api/search', methods=['POST'])
 def search():
