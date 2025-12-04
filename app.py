@@ -476,7 +476,7 @@ def crear_coleccion():
         if 'client' in locals():
             client.close()
 
-@app.route('/ver-registros/<database>/llection>')
+@app.route('/ver-registros/<database>/<collection>')
 def ver_registros(database, collection):
     if 'usuario' not in session:
         return redirect(url_for('login'))
@@ -519,6 +519,8 @@ def ver_registros(database, collection):
     finally:
         if 'client' in locals():
             client.close()
+
+
 
 @app.route('/obtener-registros', methods=['POST'])
 def obtener_registros():
