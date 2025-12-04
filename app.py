@@ -621,6 +621,11 @@ def elasticAdmin():
     if 'usuario' not in session:
         return redirect(url_for('login'))
 
+    permisos = session.get('permisos', {})
+    if not permisos.get('admin_elastic'):
+        flash('No tiene permisos para administrar Elasticsearch', 'danger')
+        return redirect(url_for('gestion_proyecto'))
+
     try:
         index_info = client_es.indices.get(index=INDEX_NAME)
         doc_count = client_es.count(index=INDEX_NAME)['count']
@@ -641,6 +646,7 @@ def elasticAdmin():
             creador=CREATOR_APP,
             usuario=session['usuario']
         )
+
 
 @app.route('/elastic-agregar-documentos', methods=['GET', 'POST'])
 def elastic_agregar_documentos():
