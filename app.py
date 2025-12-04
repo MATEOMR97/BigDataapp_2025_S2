@@ -7,6 +7,7 @@ from datetime import datetime
 import json
 import re
 from elasticsearch import Elasticsearch
+from Helpers import MongoDB, ElasticSearch, Funciones, WebScraping
 
 app = Flask(__name__)
 app.secret_key = 'MateoBigdata'  # Cambia esto por una clave secreta segura
@@ -732,6 +733,75 @@ def elastic_agregar_documentos():
         creador=CREATOR_APP,
         usuario=session['usuario']
     )
+@app.route('/procesar-webscraping-elastic', methods=['POST'])
+def procesar_webscraping_elastic():
+    """API para procesar Web Scraping"""
+    try:
+        if not session.get('logged_in'):
+            return jsonify({'success': False, 'error': 'No autorizado'}), 401
+        
+        permisos = session.get('permisos', {})
+        if not permisos.get('admin_data_elastic'):
+            return jsonify({'success': False, 'error': 'No tiene permisos para cargar datos'}), 403
+        
+        data = request.get_json()
+        url = data.get('url')
+        extensiones_navegar = data.get('extensiones_navegar', 'aspx')
+        tipos_archivos = data.get('tipos_archivos', 'pdf')
+        index = data.get('index')
+        
+        if not url or not index:
+            return jsonify({'success': False, 'error': 'URL e índice son requeridos'}), 400
+        
+        # Procesar listas de extensiones
+        lista_ext_navegar = [ext.strip() for ext in extensiones_navegar.split(',')]
+        lista_tipos_archivos = [ext.strip() for ext in tipos_archivos.split(',')]
+        
+        # Combinar ambas listas para extraer todos los enlaces
+        todas_extensiones = lista_ext_navegar + lista_tipos_archivos
+        
+        # Inicializar WebScraping
+        scraper = WebScraping(dominio_base=url.rsplit('/', 1)[0] + '/')
+        
+        # Limpiar carpeta de uploads
+        carpeta_upload = 'static/uploads'
+        Funciones.crear_carpeta(carpeta_upload)
+        Funciones.borrar_contenido_carpeta(carpeta_upload)
+        
+        # Extraer todos los enlaces
+        json_path = os.path.join(carpeta_upload, 'links.json')
+        resultado = scraper.extraer_todos_los_links(
+            url_inicial=url,
+            json_file_path=json_path,
+            listado_extensiones=todas_extensiones,
+            max_iteraciones=50
+        )
+        
+        if not resultado['success']:
+            return jsonify({'success': False, 'error': 'Error al extraer enlaces'}), 500
+        
+        # Descargar archivos PDF (o los tipos especificados)
+        resultado_descarga = scraper.descargar_pdfs(json_path, carpeta_upload)
+        
+        scraper.close()
+        
+        # Listar archivos descargados
+        archivos = Funciones.listar_archivos_carpeta(carpeta_upload, lista_tipos_archivos)
+        
+        return jsonify({
+            'success': True,
+            'archivos': archivos,
+            'mensaje': f'Se descargaron {len(archivos)} archivos',
+            'stats': {
+                'total_enlaces': resultado['total_links'],
+                'descargados': resultado_descarga.get('descargados', 0),
+                'errores': resultado_descarga.get('errores', 0)
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 
 @app.route('/elastic-listar-documentos')
 def elastic_listar_documentos():

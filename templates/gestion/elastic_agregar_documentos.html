@@ -32,6 +32,7 @@
                         </div>
                     </div>
                     <div class="card-body">
+                        <!-- Formulario ZIP a Elasticsearch -->
                         <form id="uploadForm" method="POST" action="{{ url_for('elastic_agregar_documentos') }}" enctype="multipart/form-data">
                             <div class="mb-3">
                                 <label for="zipFile" class="form-label">Archivo ZIP con documentos JSON</label>
@@ -45,6 +46,43 @@
                                 </button>
                             </div>
                         </form>
+
+                        <!-- SECCIÓN WEB SCRAPING -->
+                        <hr class="my-4">
+
+                        <h4 class="mb-3">Web Scraping y descarga de documentos</h4>
+
+                        <form id="formWebScraping" onsubmit="enviarWebScraping(event)">
+                          <div class="mb-3">
+                            <label for="ws_url" class="form-label">URL inicial</label>
+                            <input type="text" class="form-control" id="ws_url"
+                                   placeholder="https://www.minjusticia.gov.co/normatividad-co/Paginas/default.aspx" required>
+                          </div>
+
+                          <div class="mb-3">
+                            <label for="ws_ext_navegar" class="form-label">
+                              Extensiones a navegar (páginas intermedias)
+                            </label>
+                            <input type="text" class="form-control" id="ws_ext_navegar" value="aspx">
+                            <div class="form-text">Separadas por coma. Ejemplo: aspx,php</div>
+                          </div>
+
+                          <div class="mb-3">
+                            <label for="ws_tipos_archivos" class="form-label">
+                              Tipos de archivos a descargar
+                            </label>
+                            <input type="text" class="form-control" id="ws_tipos_archivos" value="pdf">
+                            <div class="form-text">Separadas por coma. Ejemplo: pdf,docx,xlsx</div>
+                          </div>
+
+                          <button type="submit" class="btn btn-secondary" id="ws_btn">
+                            Ejecutar Web Scraping
+                          </button>
+                        </form>
+
+                        <div id="ws_resultado" class="mt-3"></div>
+                        <!-- FIN SECCIÓN WEB SCRAPING -->
+
                     </div>
                 </div>
             </div>
@@ -84,17 +122,96 @@
     <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Manejo del submit del ZIP
         $(document).ready(function() {
             $('#uploadForm').on('submit', function() {
                 const submitBtn = $('#submitBtn');
                 const spinner = submitBtn.find('.spinner-border');
-                
+
                 submitBtn.prop('disabled', true);
                 spinner.removeClass('d-none');
             });
         });
+
+        // Llamado al endpoint de WebScraping con logs de depuración
+        async function enviarWebScraping(e) {
+          e.preventDefault();
+
+          const btn = document.getElementById('ws_btn');
+          const div = document.getElementById('ws_resultado');
+
+          btn.disabled = true;
+          btn.textContent = 'Procesando...';
+          div.innerHTML = '<div class="alert alert-info">Ejecutando web scraping, procesando e indexando documentos, por favor espere...</div>';
+
+          try {
+            const body = {
+              url: document.getElementById('ws_url').value,
+              extensiones_navegar: document.getElementById('ws_ext_navegar').value,
+              tipos_archivos: document.getElementById('ws_tipos_archivos').value,
+              index: '{{ index_name }}'
+            };
+
+            const res = await fetch('/procesar-webscraping-elastic', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify(body)
+            });
+
+            console.log('STATUS', res.status);
+            const rawText = await res.text();
+            console.log('RAW RESPONSE', rawText);
+
+            let data;
+            try {
+              data = JSON.parse(rawText);
+            } catch (err) {
+              console.error('JSON parse error', err);
+              div.innerHTML = `<div class="alert alert-danger">La respuesta del servidor no es JSON válido.</div>`;
+              return;
+            }
+            console.log('DATA', data);
+
+            if (data.success) {
+              const archivos = data.archivos || [];
+              let lista = '';
+              if (archivos.length > 0) {
+                lista = '<ul class="mt-2">';
+                archivos.forEach(a => {
+                  const url = `/static/uploads/${a.nombre}`;
+                  lista += `<li><a href="${url}" target="_blank">${a.nombre}</a> (${a.tamaño || a.tamano || 0} bytes)</li>`;
+                });
+                lista += '</ul>';
+              }
+
+              const stats = data.stats || {};
+
+              div.innerHTML = `
+                <div class="alert alert-success">
+                  Proceso completado.<br>
+                  Archivos descargados: ${archivos.length}<br>
+                  Indexados en Elastic: ${data.indexados || 0}<br>
+                  Errores de indexación: ${data.errores || 0}<br>
+                  Total enlaces: ${stats.total_enlaces || 0}<br>
+                  Descargados: ${stats.descargados || 0}<br>
+                  Errores descarga: ${stats.errores_descarga || 0}
+                  ${lista}
+                </div>
+              `;
+            } else {
+              div.innerHTML = `<div class="alert alert-danger">Error: ${data.error || 'Error desconocido'}</div>`;
+            }
+          } catch (err) {
+            console.error(err);
+            div.innerHTML = `<div class="alert alert-danger">Error en la petición: ${err}</div>`;
+          } finally {
+            btn.disabled = false;
+            btn.textContent = 'Ejecutar Web Scraping';
+          }
+        }
     </script>
 </div>
+
 <div class="main"></div>
 <div class="footer">
   <div class="bubbles">
@@ -103,11 +220,13 @@
   <div class="content">
     <div>
       <div><b>Creado Por: </b><a href="#">David Mateo Morales Romero</a></br>
-        <b>Maestria en Analitica de Datos </b><a href="mailto:dmoralesr1@ucentral.edu.co"></br>
-          <b>Correo: dmoralesr1@ucentral.edu.co</b></br>
+        <b>Maestria en Analitica de Datos </b><a href="mailto:dmoralesr1@ucentral.edu.co"></a></br>
+        <b>Correo: dmoralesr1@ucentral.edu.co</b></br>
       </div>
     </div>
-    <div><a class="image" href="https://www.ucentral.edu.co/" target="_blank" style="background-image: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/199011/happy.svg')"></a>
+    <div>
+      <a class="image" href="https://www.ucentral.edu.co/" target="_blank"
+         style="background-image: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/199011/happy.svg')"></a>
       <p>Versión 2.0 del 1 de Diciembre de 2025 </p>
     </div>
   </div>
@@ -117,7 +236,9 @@
   <defs>
     <filter id="blob">
       <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur"></feGaussianBlur>
-      <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9" result="blob"></feColorMatrix>
+      <feColorMatrix in="blur" mode="matrix"
+                     values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9"
+                     result="blob"></feColorMatrix>
     </filter>
   </defs>
 </svg>
